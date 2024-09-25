@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cool Calendar</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background-image: url('R-C.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 20px 0;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .calendar {
+            background-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            width: 350px;
+        }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: rgba(30, 144, 255, 0.6);
+            color: white;
+        }
+        .calendar-header button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .calendar-header button:hover {
+            transform: scale(1.2);
+        }
+        .calendar-body {
+            padding: 20px;
+            transition: opacity 0.5s ease-in-out;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .days-of-week {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .days-of-week div {
+            width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: rgba(30, 144, 255, 0.9);
+        }
+        .days {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .day {
+            width: 40px;
+            height: 70px;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 2px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .day:hover {
+            background-color: rgba(173, 216, 230, 0.6);
+            transform: scale(1.1);
+        }
+        .today {
+            background-color: rgba(30, 144, 255, 0.7);
+            color: white;
+            border-radius: 50%;
+        }
+        .lunar-date {
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.6);
+        }
+        footer {
+            margin-top: 20px;
+            background-color: transparent;
+            color: #555;
+            text-align: center;
+            padding: 10px;
+            width: 100%;
+            font-weight: bold;
+        }
+        footer a {
+            color: #555;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        .author {
+            color: #555;
+            cursor: pointer;
+        }
+        .festival {
+            font-size: 10px;
+            color: #ff4500;
+            margin-top: 2px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .calendar-tip {
+            margin-top: 10px;
+            text-align: center;
+            color: #555;
+            font-size: 14px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 5px;
+            border-radius: 5px;
+            width: 350px;
+            box-sizing: border-box;
+            font-weight: bold;
+        }
+
+        #monthYear {
+            cursor: pointer;
+        }
+
+        #dateInputModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .date-input-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            max-width: 80%;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .date-input-content input {
+            margin: 10px 0;
+            padding: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .date-input-content button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .date-input-content button:hover {
+            background-color: #45a049;
+        }
+
+        .current-time {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 30px;
+            background-color: transparent;
+            padding: 20px;
+            border-radius: 10px;
+            width: 500px;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .flip {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 80px;
+            line-height: 80px;
+            overflow: hidden;
+            margin: 0 2px;
+            perspective: 1000px;
+        }
+
+        .flip-card {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            background-color: rgba(30, 144, 255, 0.6);
+            color: white;
+            border-radius: 5px;
+        }
+
+        .flip-card.front {
+            z-index: 2;
+            transform: rotateX(0deg);
+        }
+
+        .flip-card.back {
+            transform: rotateX(180deg);
+        }
+
+        .flip.changing .flip-card.front {
+            transform: rotateX(-180deg);
+        }
+
+        .flip.changing .flip-card.back {
+            transform: rotateX(0deg);
+        }
+
+        .colon {
+            display: inline-block;
+            font-size: 48px;
+            vertical-align: top;
+            margin: 0 5px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes flipEffect {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(90deg); }
+            100% { transform: rotateX(0deg); }
+        }
+
+        .flip.changing {
+            animation: flipEffect 0.6s;
+        }
+
+        .ai-chat-button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .ai-chat-button {
+            background-color: #4682B4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .ai-chat-button:hover {
+            background-color: #5F9EA0;
+        }
+
+        .ai-chat-button-description {
+            color: #888;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .ai-chat-window {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            width: 80%;
+            max-width: 600px;
+            height: 400px;
+            padding: 20px;
+            z-index: 1000;
+            flex-direction: column;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .ai-chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .ai-chat-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4682B4;
+        }
+
+        .ai-chat-close {
+            cursor: pointer;
+            font-size: 20px;
+            color: #888;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .user-message, .ai-message {
+            margin: 5px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .user-message {
+            background-color: #E6F3FF;
+            align-self: flex-end;
+            color: #0066CC;
+        }
+
+        .ai-message {
+            background-color: #FFFFFF;
+            align-self: flex-start;
+            color: #0066CC;
+        }
+
+        #userInput {
+            width: calc(100% - 70px);
+            padding: 5px;
+            margin-right: 10px;
+            border: 1px solid #4682B4;
+            border-radius: 5px;
+        }
+
+        .ai-chat-window button {
+            width: 60px;
+            background-color: #4682B4;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .ai-chat-window button:hover {
+            background-color: #5F9EA0;
+        }
+
+        .encouragement {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            box-sizing: border-box;
+        }
+
+        .ai-chat-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+</head>
+<body style="background-image: url('R-C.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+    <div class="ai-chat-button-container">
+        <button class="ai-chat-button" onclick="toggleAIChat()">AI大模型</button>
+        <div class="ai-chat-button-description">点击即可打开AI对话界面</div>
+    </div>
+    <div class="ai-chat-overlay" id="aiChatOverlay"></div>
+    <div class="ai-chat-window" id="aiChatWindow">
+        <div class="ai-chat-header">
+            <div class="ai-chat-title" id="aiChatTitle">AI大模型对话</div>
+            <div class="ai-chat-close" onclick="toggleAIChat()">×</div>
+        </div>
+        <div class="chat-messages" id="chatMessages"></div>
+        <input type="text" id="userInput" placeholder="问点什么吧...">
+        <button onclick="sendMessage()">发送</button>
+    </div>
+    <div class="current-time" id="currentTime"></div>
+    <div class="encouragement" id="encouragement"></div>
+    <div class="calendar" id="calendar">
+        <div class="calendar-header">
+            <button id="prevMonth">&lt;</button>
+            <div id="monthYear"></div>
+            <button id="nextMonth">&gt;</button>
+        </div>
+        <div class="calendar-body" id="calendarBody">
+            <div class="days-of-week">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+            </div>
+            <div class="days" id="days"></div>
+        </div>
+    </div>
+    
+    <div class="calendar-tip">
+        按 > 或 < 键可切换月份
+    </div>
+    
+    <footer>
+        <div>2024.9.25更新 创作者为 <span class="author">来自山东省济南市的一名小学生</span></div>
+    </footer>
+
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="modalText"></p>
+        </div>
+    </div>
+
+    <div id="dateInputModal" class="modal">
+        <div class="date-input-content">
+            <h2>更改日期</h2>
+            <input type="number" id="yearInput" placeholder="输入年份">
+            <input type="number" id="monthInput" placeholder="输入月份 (1-12)">
+            <button onclick="changeDate()">确定</button>
+        </div>
+    </div>
+
+    <script>
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        let currentDate = new Date();
+
+        function renderCalendar() {
+            const monthYear = document.getElementById('monthYear');
+            const daysContainer = document.getElementById('days');
+            daysContainer.innerHTML = '';
+
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const today = new Date();
+
+            monthYear.textContent = `${monthNames[month]} ${year}`;
+            monthYear.onclick = showDateInputModal;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.classList.add('day');
+                daysContainer.appendChild(emptyDiv);
+            }
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('day');
+                const festival = getFestival(year, month + 1, i);
+                const lunarDate = getLunarDate(year, month + 1, i);
+                dayDiv.innerHTML = `
+                    <div>${i}</div>
+                    <div class="lunar-date">${lunarDate}</div>
+                    ${festival ? `<div class="festival">${festival}</div>` : ''}
+                `;
+                if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    dayDiv.classList.add('today');
+                }
+                dayDiv.addEventListener('click', () => showModal(year, month + 1, i, festival, lunarDate));
+                daysContainer.appendChild(dayDiv);
+            }
+        }
+
+        function getLunarDate(year, month, day) {
+            const lunarDays = ["初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十", "十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十", "廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十"];
+            const lunarDay = lunarDays[(day - 1) % 30];
+            return `${lunarDay}`;
+        }
+
+        function getFestival(year, month, day) {
+            const festivals = {
+                '1-1': '元旦',
+                '5-1': '劳动节',
+                '10-1': '国庆节',
+            };
+
+            const solarTerms = {
+                '2-4': '立春', '2-19': '雨水',
+                '3-6': '惊蛰', '3-21': '春分',
+                '4-5': '清明', '4-20': '谷雨',
+                '5-6': '立夏', '5-21': '小满',
+                '6-6': '芒种', '6-21': '夏至',
+                '7-7': '小暑', '7-23': '大暑',
+                '8-8': '立秋', '8-23': '处暑',
+                '9-8': '白露', '9-23': '秋分',
+                '10-8': '寒露', '10-23': '霜降',
+                '11-7': '立冬', '11-22': '小雪',
+                '12-7': '大雪', '12-22': '冬至',
+                '1-6': '小寒', '1-20': '大寒'
+            };
+
+            const key = `${month}-${day}`;
+            return festivals[key] || solarTerms[key] || '';
+        }
+
+        function showModal(year, month, day, festival, lunarDate) {
+            const modal = document.getElementById('myModal');
+            const modalText = document.getElementById('modalText');
+            modalText.innerHTML = `
+                <h2>${year}年${month}月${day}日</h2>
+                <p>农历：${lunarDate}</p>
+                ${festival ? `<p>${festival}</p>` : ''}
+            `;
+            modal.style.display = 'block';
+        }
+
+        function prevMonth() {
+            const calendarBody = document.getElementById('calendarBody');
+            calendarBody.style.opacity = '0';
+            setTimeout(() => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+                calendarBody.style.opacity = '1';
+            }, 500);
+        }
+
+        function nextMonth() {
+            const calendarBody = document.getElementById('calendarBody');
+            calendarBody.style.opacity = '0';
+            setTimeout(() => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+                calendarBody.style.opacity = '1';
+            }, 500);
+        }
+
+        function showDateInputModal() {
+            const modal = document.getElementById('dateInputModal');
+            modal.style.display = 'block';
+        }
+
+        function changeDate() {
+            const yearInput = document.getElementById('yearInput');
+            const monthInput = document.getElementById('monthInput');
+            const year = parseInt(yearInput.value);
+            const month = parseInt(monthInput.value) - 1;
+
+            if (isNaN(year) || isNaN(month) || month < 0 || month > 11) {
+                alert('请输入有效的年份和月份');
+                return;
+            }
+
+            currentDate.setFullYear(year);
+            currentDate.setMonth(month);
+            renderCalendar();
+
+            const modal = document.getElementById('dateInputModal');
+            modal.style.display = 'none';
+
+            yearInput.value = '';
+            monthInput.value = '';
+        }
+
+        document.getElementById('prevMonth').addEventListener('click', prevMonth);
+        document.getElementById('nextMonth').addEventListener('click', nextMonth);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === '>' || (event.shiftKey && event.key === '.') || event.key === 'ArrowRight') {
+                event.preventDefault();
+                nextMonth();
+            } else if (event.key === '<' || (event.shiftKey && event.key === ',') || event.key === 'ArrowLeft') {
+                event.preventDefault();
+                prevMonth();
+            }
+        });
+
+        const modal = document.getElementById('myModal');
+        const span = document.getElementsByClassName('close')[0];
+        span.onclick = function() {
+            modal.style.display = 'none';
+        }
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+            const dateInputModal = document.getElementById('dateInputModal');
+            if (event.target == dateInputModal) {
+                dateInputModal.style.display = 'none';
+            }
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+
+            const timeDiv = document.getElementById('currentTime');
+            const newTimeHTML = `
+                <div class="flip">${hours[0]}</div><div class="flip">${hours[1]}</div><span class="colon">:</span>
+                <div class="flip">${minutes[0]}</div><div class="flip">${minutes[1]}</div><span class="colon">:</span>
+                <div class="flip">${seconds[0]}</div><div class="flip">${seconds[1]}</div>
+            `;
+
+            if (timeDiv.innerHTML !== newTimeHTML) {
+                const oldFlips = timeDiv.querySelectorAll('.flip');
+                const newTimeDiv = document.createElement('div');
+                newTimeDiv.innerHTML = newTimeHTML;
+                const newFlips = newTimeDiv.querySelectorAll('.flip');
+
+                for (let i = 0; i < oldFlips.length; i++) {
+                    if (oldFlips[i].textContent !== newFlips[i].textContent) {
+                        newFlips[i].innerHTML = `
+                            <div class="flip-card front">${oldFlips[i].textContent}</div>
+                            <div class="flip-card back">${newFlips[i].textContent}</div>
+                        `;
+                        newFlips[i].classList.add('changing');
+                    } else {
+                        newFlips[i].innerHTML = `<div class="flip-card front">${newFlips[i].textContent}</div>`;
+                    }
+                }
+
+                timeDiv.innerHTML = newTimeDiv.innerHTML;
+
+                setTimeout(() => {
+                    const flips = timeDiv.querySelectorAll('.flip');
+                    flips.forEach(flip => {
+                        flip.classList.remove('changing');
+                        flip.innerHTML = `<div class="flip-card front">${flip.querySelector('.flip-card.back')?.textContent || flip.textContent}</div>`;
+                    });
+                }, 600);
+            }
+
+            // 只在分钟变化时更新鼓励语
+            if (now.getMinutes() !== currentDate.getMinutes()) {
+                updateEncouragement(now.getHours());
+                currentDate = now;
+            }
+        }
+
+        const encouragements = {
+            morning: [
+                "早安！新的一天充满希望，加油！",
+                "早晨是一天中最美好的时光，好好享受吧！",
+                "今天也要元气满满哦！",
+                "早起的鸟儿有虫吃，今天也要加油哦！",
+                "新的一天，新的开始，你一定会有好运的！"
+            ],
+            afternoon: [
+                "午后时光，记得休息一下哦！",
+                "下午好！保持专注，你一定能完成今天的任务！",
+                "别忘了喝水，保持精力充沛！",
+                "午后小憩一会儿，让大脑充电再出发！",
+                "阳光正好，心情也要美美的！"
+            ],
+            evening: [
+                "晚上好！今天辛苦了，放松一下吧。",
+                "夜晚是放松和总结的好时机，好好利用吧！",
+                "记得早点休息，为明天充电！",
+                "晚上是思考人生的好时候，享受这宁静时光吧！",
+                "今天也是很棒的一天，为自己点个赞！"
+            ],
+            night: [
+                "夜深了，注意休息哦！",
+                "熬夜对身体不好，早点睡吧！",
+                "睡个好觉，明天会更棒！",
+                "梦里都是美好的，愿你好梦！",
+                "静谧的夜晚，放空自己，好好休息吧！"
+            ]
+        };
+
+        let currentEncouragementIndex = {};
+        let lastEncouragement = '';
+
+        function getNextEncouragement(timeOfDay) {
+            if (currentEncouragementIndex[timeOfDay] === undefined) {
+                currentEncouragementIndex[timeOfDay] = Math.floor(Math.random() * encouragements[timeOfDay].length);
+            } else {
+                currentEncouragementIndex[timeOfDay] = (currentEncouragementIndex[timeOfDay] + 1) % encouragements[timeOfDay].length;
+            }
+            return encouragements[timeOfDay][currentEncouragementIndex[timeOfDay]];
+        }
+
+        function updateEncouragement(hour) {
+            const encouragementDiv = document.getElementById('encouragement');
+            let timeOfDay;
+            if (hour >= 5 && hour < 12) timeOfDay = 'morning';
+            else if (hour >= 12 && hour < 18) timeOfDay = 'afternoon';
+            else if (hour >= 18 && hour < 22) timeOfDay = 'evening';
+            else timeOfDay = 'night';
+
+            let encouragement;
+            do {
+                encouragement = getNextEncouragement(timeOfDay);
+            } while (encouragement === lastEncouragement && encouragements[timeOfDay].length > 1);
+
+            lastEncouragement = encouragement;
+            encouragementDiv.textContent = encouragement;
+        }
+
+        // AI聊天功能
+        function generateToken(apiKey, expSeconds) {
+            const [id, secret] = apiKey.split('.');
+            const now = Math.floor(Date.now() / 1000); // 当前时间戳（秒）
+            const exp = now + expSeconds; // 过期时间戳（秒）
+
+            const header = {alg: 'HS256', sign_type: 'SIGN'};
+            const payload = {
+                api_key: id,
+                exp: exp,
+                timestamp: now
+            };
+
+            const sHeader = JSON.stringify(header);
+            const sPayload = JSON.stringify(payload);
+
+            return KJUR.jws.JWS.sign("HS256", sHeader, sPayload, secret);
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const chatMessages = document.getElementById('chatMessages');
+            const userMessage = userInput.value.trim();
+
+            if (userMessage) {
+                chatMessages.innerHTML += `<div class="user-message">${userMessage}</div>`;
+                userInput.value = '';
+
+                try {
+                    const apiKey = '65dc1bc934f9c4f8f6ba8f3eaef57d96.nYN82qNj8wNJ2fKF';
+                    const token = generateToken(apiKey, 3600);
+
+                    const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            model: 'glm-4',
+                            messages: [
+                                { role: 'user', content: userMessage }
+                            ]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`API request failed: ${response.status} ${response.statusText}\n${errorText}`);
+                    }
+
+                    const data = await response.json();
+                    const aiResponse = data.choices[0].message.content;
+
+                    chatMessages.innerHTML += `<div class="ai-message">${aiResponse}</div>`;
+                } catch (error) {
+                    console.error('Error:', error);
+                    chatMessages.innerHTML += `<div class="ai-message">抱歉，我遇到了一些问题：${error.message}</div>`;
+                }
+
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+        // 添加事件监听器，处理回车键发送消息
+        document.getElementById('userInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // 阻止默认的回车行为
+                sendMessage();
+            }
+        });
+
+        // 允许聊天窗口滚动
+        document.querySelector('.chat-messages').addEventListener('wheel', function(event) {
+            event.stopPropagation(); // 阻止事件冒泡到body
+        });
+
+        function enableScroll() {
+            window.addEventListener('wheel', handleScroll, { passive: false });
+            window.addEventListener('keydown', handleKeyScroll);
+        }
+
+        function handleScroll(event) {
+            // 检查鼠标是否在聊天窗口上
+            if (!event.target.closest('.ai-chat-window')) {
+                event.preventDefault();
+                window.scrollBy(0, event.deltaY);
+            }
+        }
+
+        function handleKeyScroll(event) {
+            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                event.preventDefault();
+                const scrollAmount = event.key === 'ArrowUp' ? -50 : 50;
+                window.scrollBy(0, scrollAmount);
+            }
+        }
+
+        window.addEventListener('load', enableScroll);
+
+        setInterval(updateTime, 1000);
+
+        renderCalendar();
+        updateTime();
+
+        // 在页面加载时初始化鼓励语
+        window.addEventListener('load', () => {
+            updateEncouragement(new Date().getHours());
+        });
+
+        function toggleAIChat() {
+            const aiChatWindow = document.getElementById('aiChatWindow');
+            const aiChatOverlay = document.getElementById('aiChatOverlay');
+            const aiChatTitle = document.getElementById('aiChatTitle');
+            if (aiChatWindow.style.display === 'none' || aiChatWindow.style.display === '') {
+                aiChatWindow.style.display = 'flex';
+                aiChatOverlay.style.display = 'block';
+                aiChatTitle.textContent = '小智AI智能大模型';
+                document.body.style.overflow = 'hidden'; // 防止背景滚动
+            } else {
+                aiChatWindow.style.display = 'none';
+                aiChatOverlay.style.display = 'none';
+                aiChatTitle.textContent = 'AI大模型对话';
+                document.body.style.overflow = ''; // 恢复背景滚动
+            }
+        }
+    </script>
+
+    <!-- 添加JWT库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/8.0.20/jsrsasign-all-min.js"></script>
+</body>
+</html>
